@@ -1,0 +1,5 @@
+project1
+/lib/
+/backup/
+*.lps
+*.res

@@ -1,0 +1,38 @@
+object Form1: TForm1
+  Left = 690
+  Height = 584
+  Top = 127
+  Width = 707
+  Caption = 'Form1'
+  ClientHeight = 584
+  ClientWidth = 707
+  DesignTimePPI = 120
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnPaint = FormPaint
+  LCLVersion = '3.4.0.0'
+  object Button1: TButton
+    Left = 279
+    Height = 165
+    Top = 157
+    Width = 266
+    Caption = 'Button1'
+    TabOrder = 0
+  end
+  object Button2: TButton
+    Left = 48
+    Height = 98
+    Top = 320
+    Width = 152
+    Caption = 'Button2'
+    TabOrder = 1
+  end
+  object Panel1: TPanel
+    Left = 194
+    Height = 135
+    Top = 356
+    Width = 169
+    Caption = 'Panel1'
+    TabOrder = 2
+  end
+end
