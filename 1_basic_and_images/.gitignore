@@ -3,3 +3,4 @@ project1
 /backup/
 *.lps
 *.res
+*.exe
