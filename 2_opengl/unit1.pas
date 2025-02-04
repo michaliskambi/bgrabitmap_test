@@ -48,7 +48,13 @@ var
   X: Single;
   I: Integer;
 begin
-  // BGLContext.Canvas.Fill(CSSWhite); // not necessary to clear (it seems - TODO find where it is cleared by BGRA)
+  { Not necessary to clear.
+    TCustomBGLVirtualScreen.DoOnPaint always calls BGLViewPort before
+    drawing. If only TCustomBGLVirtualScreen.Color is not clNone,
+    the BGLViewPort is called with 3rd argument (color to clear) and it fills
+    the contents. }
+  //BGLContext.Canvas.Fill(CSSWhite);
+
   X := Frac(StartTime.ElapsedTime) * 1000;
   WritelnLog('from start: %f', [X]);
   BGLContext.Canvas.FillRect(X, 10, X + 100, 100, CSSRed);
