@@ -7,6 +7,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
   BGLVirtualScreen, BGRAOpenGL, BGRAClasses, BGRABitmapTypes,
+  BGRABitmap,
   CastleTimeUtils, CastleLog;
 
 type
@@ -23,10 +24,12 @@ type
       BGLContext: TBGLContext; FramesPerSecond: integer);
     procedure BGLVirtualScreen1Redraw(Sender: TObject; BGLContext: TBGLContext);
     procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
   private
     StartTime: TTimerResult;
     Circles: array of TCircle;
+    Bmp: TBGLBitmap;
   public
 
   end;
@@ -62,6 +65,51 @@ begin
   begin
     BGLContext.Canvas.Polylines(Circles[I].Points, Circles[I].Color);
   end;
+
+  // create GL resources when context is current
+  if Bmp = nil then
+    Bmp := TBGLBitmap.Create(256, 256);
+
+  { Note:
+
+    Docs https://wiki.freepascal.org/BGRABitmap_and_OpenGL say:
+    "Instead of using TBGRABitmap class, use TBGLBitmap class of BGRAOpenGL unit.
+    It is similar..." , https://wiki.freepascal.org/BGRABitmap_and_OpenGL .
+    TBGLBitmap *does* descend from TBGRABitmap and TBGRACustomBitmap ,
+    so it shares similar API.
+
+    But using TBGLBitmap doesn't mean one is drawing "with OpenGL power".
+    E.g. it doesn't override how polylines are drawn.
+
+    Instead, TBGLCustomBitmap.GetTexture just copies the CPU-drawn contents to GPU,
+    by calling TBGLCustomTexture.Update which calls TBGLTexture.UpdateOpenGLTexture
+    which calls glTexImage2D -- this just loads data from regular memory into GPU,
+    so you get no benefit from how you drawn e.g. polylines in that data.
+    It's not doing hardware-optimized drawing of polylinesin this case.
+
+    Confirm this by tracing below code:
+
+    - DrawPolyLineAntialias gets called each frame, resulting in
+      ComputeWidePolylinePoints.
+    - TBGLTexture.UpdateOpenGLTexture and glTexImage2D get called each frame.
+    - TBGLCanvas.InternalStartPolyline is not called.
+  }
+  {$ifdef TRACE_TBGLBitmap_drawing}
+  WritelnLog('TBGLBitmap drawing: begin');
+  {$endif}
+
+  Bmp.Fill(CSSBlue);
+  // draw line, changing each frame in Y, to see the Bmp gets updated
+  Bmp.DrawPolyLineAntialias([
+    PointF(10,   10 + X / 10),
+    PointF(100, 100 + X / 10),
+    PointF(100,       X / 10)
+  ], CSSYellow, 10);
+  BGLContext.Canvas.PutImage(X, 200, Bmp.Texture, CSSWhite);
+
+  {$ifdef TRACE_TBGLBitmap_drawing}
+  WritelnLog('TBGLBitmap drawing: end');
+  {$endif}
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -96,6 +144,11 @@ begin
       Circles[I].Points[J].Y := C * (10 + MaxRadius * I / CirclesCount) + CircleMiddleY;
     end;
   end;
+end;
+
+procedure TForm1.FormDestroy(Sender: TObject);
+begin
+  FreeAndNil(Bmp);
 end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);

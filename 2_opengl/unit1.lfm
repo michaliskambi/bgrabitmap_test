@@ -1,12 +1,13 @@
 object Form1: TForm1
-  Left = 455
+  Left = 571
   Height = 701
-  Top = 154
+  Top = 144
   Width = 1097
   Caption = 'Form1'
   ClientHeight = 701
   ClientWidth = 1097
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   LCLVersion = '3.4.0.0'
   object BGLVirtualScreen1: TBGLVirtualScreen
     Left = 0
